@@ -139,11 +139,13 @@ worker_done(#fitting{pid=Pid, ref=Ref}) ->
 workers(Fitting) ->
     try
         {ok, gen_fsm:sync_send_all_state_event(Fitting, workers)}
-    catch exit:_ ->
+    catch exit:Reason ->
             %% catching all exit types here , since we don't care
             %% whether the coordinator was gone before we asked ('noproc')
             %% or if it went away before responding ('normal' or other
             %% exit reason)
+            lager:debug("But we care for debug, #9291 Reason: ~w", [Reason]),
+            lager:debug("Fitting: ~w", [Fitting]),
             gone
     end.
 
@@ -375,7 +377,9 @@ handle_info(_Info, StateName, State) ->
 
 %% @doc Unused.
 -spec terminate(term(), atom(), state()) -> ok.
-terminate(_Reason, _StateName, _State) ->
+terminate(Reason, StateName, State) ->
+    lager:debug("#9291 - StateName: ~s, Reason: ~w", [StateName, Reason]),
+    lager:debug("#9291 - State: ~w", [State]),
     ok.
 
 %% @doc Unused.
