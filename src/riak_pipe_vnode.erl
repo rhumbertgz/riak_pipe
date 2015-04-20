@@ -1,6 +1,6 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2011 Basho Technologies, Inc.
+%% Copyright (c) 2011-2015 Basho Technologies, Inc.
 %%
 %% This file is provided to you under the Apache License,
 %% Version 2.0 (the "License"); you may not use this file
@@ -50,23 +50,19 @@
          status/2]).
 -export([hash_for_partition/1]).
 
--include_lib("riak_core/include/riak_core_vnode.hrl"). %% ?FOLD_REQ
--include("riak_pipe.hrl").
--include("riak_pipe_log.hrl").
--include("riak_pipe_debug.hrl").
-
--ifdef(namespaced_types).
--type riak_pipe_vnode_queue() :: queue:queue().
--else.
--type riak_pipe_vnode_queue() :: queue().
--endif.
-
 -export_type([chashfun/0,
               chash/0,
               partition/0, %% from riak_core_vnode.hrl
               nval/0,
               qtimeout/0,
               qerror/0]).
+
+-include_lib("riak_core/include/riak_core_vnode.hrl"). %% ?FOLD_REQ
+-include_lib("otp_compat/include/otp_compat.hrl").
+-include("riak_pipe.hrl").
+-include("riak_pipe_log.hrl").
+-include("riak_pipe_debug.hrl").
+
 -type chashfun() :: {Module :: atom(), Function :: atom()}
                   | chash()
                   | follow
@@ -98,14 +94,14 @@
                  details :: #fitting_details{},
                  state :: {working, term()} | waiting | init,
                  inputs_done :: boolean(),
-                 q :: riak_pipe_vnode_queue(),
+                 q :: queue_t(),
                  q_limit :: pos_integer(),
-                 blocking :: riak_pipe_vnode_queue(),
+                 blocking :: queue_t(),
                  handoff :: undefined | {waiting, term()},
                  perf :: #worker_perf{}}).
 -record(worker_handoff, {fitting :: #fitting{},
-                         queue :: riak_pipe_vnode_queue(),
-                         blocking :: riak_pipe_vnode_queue(),
+                         queue :: queue_t(),
+                         blocking :: queue_t(),
                          archive :: term()}).
 -record(handoff, {fold :: fun((Key::term(), Value::term(), Acc::term())
                               -> NewAcc::term()),
@@ -607,7 +603,7 @@ handle_handoff_data(Data, State) ->
 
 %% @doc Produce a binary representing the worker data to handoff.
 -spec encode_handoff_item(riak_pipe:fitting(),
-                          {riak_pipe_vnode_queue(), riak_pipe_vnode_queue(), term()}) ->
+                          {queue_t(), queue_t(), term()}) ->
          binary().
 encode_handoff_item(Fitting, {Queue, Blocking, Archive}) ->
     term_to_binary(#worker_handoff{fitting=Fitting,
@@ -891,8 +887,8 @@ add_input(#worker{q=Q, q_limit=QL, blocking=Blocking}=Worker,
 
 %% @doc Merge the worker on this vnode with the worker from another
 %%      vnode.  (The grungy part of {@link handle_handoff_data/2}.)
--spec handoff_worker(#worker{}, riak_pipe_vnode_queue(),
-                     riak_pipe_vnode_queue(), Archive::term()) ->
+-spec handoff_worker(#worker{}, queue_t(),
+                     queue_t(), Archive::term()) ->
           #worker{}.
 handoff_worker(#worker{q=Q, blocking=Blocking}=Worker,
                HandoffQ, HandoffBlocking, HandoffState) ->

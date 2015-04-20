@@ -1,6 +1,6 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2011 Basho Technologies, Inc.
+%% Copyright (c) 2011,2012,2015 Basho Technologies, Inc.
 %%
 %% This file is provided to you under the Apache License,
 %% Version 2.0 (the "License"); you may not use this file
@@ -25,17 +25,12 @@
 -export([log/2,
          trace/3]).
 
--include("riak_pipe.hrl").
-
 -export_type([trace_filter/0]).
 
--ifdef(namespaced_types).
--type riak_pipe_log_set() :: sets:set().
--else.
--type riak_pipe_log_set() :: set().
--endif.
+-include_lib("otp_compat/include/otp_compat.hrl").
+-include("riak_pipe.hrl").
 
--type trace_filter() :: all | riak_pipe_log_set() | trace_compiled().
+-type trace_filter() :: all | set_t() | trace_compiled().
 -type trace_compiled() :: ordsets:ordset(term()).
 
 %% @doc Log the given message, if logging is enabled, to the specified

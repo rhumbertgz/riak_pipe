@@ -1,6 +1,6 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2011 Basho Technologies, Inc.
+%% Copyright (c) 2011,2013,2015 Basho Technologies, Inc.
 %%
 %% This file is provided to you under the Apache License,
 %% Version 2.0 (the "License"); you may not use this file
@@ -87,19 +87,15 @@
          validate_arg/1]).
 -export([chashfun/1]).
 
+-export_type([state/0]).
+
+-include_lib("otp_compat/include/otp_compat.hrl").
 -include("riak_pipe.hrl").
 
--ifdef(namespaced_types).
--type riak_pipe_w_reduce_dict() :: dict:dict().
--else.
--type riak_pipe_w_reduce_dict() :: dict().
--endif.
-
--record(state, {accs :: riak_pipe_w_reduce_dict(),
+-record(state, {accs :: dict_t(),
                 p :: riak_pipe_vnode:partition(),
                 fd :: riak_pipe_fitting:details()}).
 -opaque state() :: #state{}.
--export_type([state/0]).
 
 %% @doc Setup creates the store for evaluation results (a dict()) and
 %%      stashes away the `Partition' and `FittingDetails' for later.
@@ -138,7 +134,7 @@ done(#state{accs=Accs, p=Partition, fd=FittingDetails}) ->
     ok.
 
 %% @doc The archive is just the store (dict()) of evaluation results.
--spec archive(state()) -> {ok, riak_pipe_w_reduce_dict()}.
+-spec archive(state()) -> {ok, dict_t()}.
 archive(#state{accs=Accs}) ->
     %% just send state of reduce so far
     {ok, Accs}.
@@ -147,7 +143,7 @@ archive(#state{accs=Accs}) ->
 %%      the same key are concatenated.  The reduce function is also
 %%      re-evaluated for the key, such that {@link done/1} still has
 %%      the correct value to send, even if no more inputs arrive.
--spec handoff(riak_pipe_w_reduce_dict(), state()) -> {ok, state()}.
+-spec handoff(dict_t(), state()) -> {ok, state()}.
 handoff(HandoffAccs, #state{accs=Accs}=State) ->
     %% for each Acc, add to local accs;
     NewAccs = dict:merge(fun(K, HA, A) ->

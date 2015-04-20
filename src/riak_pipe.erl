@@ -1,6 +1,6 @@
 %% -------------------------------------------------------------------
 %%
-%% Copyright (c) 2011 Basho Technologies, Inc.
+%% Copyright (c) 2011-2015 Basho Technologies, Inc.
 %%
 %% This file is provided to you under the Apache License,
 %% Version 2.0 (the "License"); you may not use this file
@@ -77,19 +77,15 @@
          example_tick/4,
          zero_part/1]).
 
--include("riak_pipe.hrl").
--include("riak_pipe_debug.hrl").
-
--ifdef(namespaced_types).
--type riak_pipe_dict() :: dict:dict().
--else.
--type riak_pipe_dict() :: dict().
--endif.
-
 -export_type([pipe/0,
               fitting/0,
               fitting_spec/0,
               exec_opts/0]).
+
+-include_lib("otp_compat/include/otp_compat.hrl").
+-include("riak_pipe.hrl").
+-include("riak_pipe_debug.hrl").
+
 -type pipe() :: #pipe{}.
 -type fitting() :: #fitting{}.
 -type fitting_spec() :: #fitting_spec{}.
@@ -501,7 +497,7 @@ status(#pipe{fittings=Fittings}) ->
 %% '''
 -spec invert_dict(fun((term(), term()) -> term()),
                   fun((term(), term()) -> term()),
-                  riak_pipe_dict()) -> riak_pipe_dict().
+                  dict_t()) -> dict_t().
 invert_dict(KeyFun, ValFun, Dict) ->
     dict:fold(
       fun(Key, Vals, DAcc) ->
