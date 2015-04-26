@@ -58,7 +58,7 @@
               qerror/0]).
 
 -include_lib("riak_core/include/riak_core_vnode.hrl"). %% ?FOLD_REQ
--include_lib("otp_compat/include/otp_compat.hrl").
+-include_lib("otp_compat/include/ns_types.hrl").
 -include("riak_pipe.hrl").
 -include("riak_pipe_log.hrl").
 -include("riak_pipe_debug.hrl").

@@ -82,7 +82,7 @@
               fitting_spec/0,
               exec_opts/0]).
 
--include_lib("otp_compat/include/otp_compat.hrl").
+-include_lib("otp_compat/include/ns_types.hrl").
 -include("riak_pipe.hrl").
 -include("riak_pipe_debug.hrl").
 
